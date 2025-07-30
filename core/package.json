@@ -35,6 +35,8 @@
     "@types/tar": "^6.1.13",
     "@types/uuid": "^9.0.7",
     "@types/win-ca": "^3.5.4",
+    "@types/express": "^5.0.3",
+    "@types/crypto-js": "^4.2.2",
     "cross-env": "^7.0.3",
     "esbuild": "0.17.19",
     "eslint": "^8",
@@ -117,7 +119,11 @@
     "winston": "^3.17.0",
     "workerpool": "^9.1.3",
     "yaml": "^2.4.2",
-    "zod": "^3.24.2"
+    "zod": "^3.24.2",
+    "jwt-decode": "4.0.0",
+    "openid-client": "^5.7.1",
+    "express": "^5.1.0",
+    "crypto-js": "^4.2.0" 
   },
   "engine-strict": true,
   "engines": {

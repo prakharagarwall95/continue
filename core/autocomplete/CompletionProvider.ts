@@ -63,7 +63,7 @@ export class CompletionProvider {
 
     // Ignore empty API keys for Mistral since we currently write
     // a template provider without one during onboarding
-    if (llm.providerName === "mistral" && llm.apiKey === "") {
+    if ((llm.providerName === "mistral" || llm.providerName === "oca") && llm.apiKey === "") {
       return undefined;
     }
 

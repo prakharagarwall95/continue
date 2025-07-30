@@ -997,4 +997,25 @@ To get started, [register](https://dataplatform.cloud.ibm.com/registration/stepo
     packages: [{ ...models.AUTODETECT }],
     apiKeyUrl: "https://venice.ai/chat",
   },
+  oca: {
+    title: "Oracle Code Assist",
+    provider: "oca",
+    icon: "oca.png",
+    description:
+      "For internal Oracle Employees, please see https://confluence.oraclecorp.com/confluence/display/AICODE/Oracle+Code+Assist+via+Cline.",
+    longDescription: "For external customers, contact your IT admin to provision Oracle Code Assist access.",
+    tags: [ModelProviderTags.RequiresApiKey],
+    collectInputFor: [
+      {
+        inputType: "text",
+        key: "apiBase",
+        label: "Use Custom Base URL (optional)",
+        placeholder: "Enter the API Base URL",
+        defaultValue: "https://code-internal.aiservice.us-chicago-1.oci.oraclecloud.com/20250206/app/litellm",
+        required: false,
+      },
+      ...completionParamsInputsConfigs,
+    ],
+    packages: [{ ...models.AUTODETECT }],
+  },
 };

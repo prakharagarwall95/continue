@@ -4,6 +4,7 @@ import { Bedrock } from "./providers/bedrock.js";
 import { Cohere } from "./providers/cohere.js";
 import { Gemini } from "./providers/gemini.js";
 import { Mistral } from "./providers/mistral.js";
+import { Oca } from "./providers/oca.js";
 import { Ollama } from "./providers/ollama.js";
 import { OpenAi } from "./providers/openai.js";
 import { Vllm } from "./providers/vllm.js";
@@ -23,6 +24,7 @@ export const allModelProviders: ModelProvider[] = [
   Bedrock,
   Cohere,
   xAI,
+  Oca
 ];
 
 export const allLlms: LlmInfo[] = allModelProviders.flatMap((provider) =>

@@ -5,6 +5,9 @@
 # - Debug -> Extension
 set -e
 
+# Ensure .npmrc in the repo root is used for all npm commands
+export NPM_CONFIG_USERCONFIG="$(pwd)/.npmrc"
+
 # Check if node version matches .nvmrc
 if [ -f .nvmrc ]; then
     required_node_version=$(cat .nvmrc)

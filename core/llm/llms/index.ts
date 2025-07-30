@@ -62,6 +62,7 @@ import Vllm from "./Vllm";
 import Voyage from "./Voyage";
 import WatsonX from "./WatsonX";
 import xAI from "./xAI";
+import Oca from "./oca/Oca";
 export const LLMClasses = [
   Anthropic,
   Cohere,
@@ -116,6 +117,7 @@ export const LLMClasses = [
   Inception,
   Voyage,
   LlamaStack,
+  Oca
 ];
 
 export async function llmFromDescription(
