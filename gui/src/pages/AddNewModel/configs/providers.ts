@@ -1012,7 +1012,7 @@ To get started, [register](https://dataplatform.cloud.ibm.com/registration/stepo
         label: "Use Custom Base URL (optional)",
         placeholder: "Enter the API Base URL",
         defaultValue: "https://code-internal.aiservice.us-chicago-1.oci.oraclecloud.com/20250206/app/litellm",
-        required: false,
+        required: true,
       },
       ...completionParamsInputsConfigs,
     ],

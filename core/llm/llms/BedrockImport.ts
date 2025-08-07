@@ -13,7 +13,7 @@ class BedrockImport extends BaseLLM {
     region: "us-east-1",
   };
   // the BedRock imported custom model ARN
-  modelArn?: string | undefined;
+  declare modelArn?: string | undefined;
 
   constructor(options: LLMOptions) {
     super(options);

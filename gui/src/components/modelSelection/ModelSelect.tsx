@@ -25,6 +25,7 @@ import {
   ListboxOption,
   ListboxOptions,
 } from "../ui/Listbox";
+import { OcaRestrictivePopup } from "../../forms/ocaRestrictive";
 
 interface ModelOptionProps {
   option: Option;
@@ -64,6 +65,11 @@ function ModelOption({
     }
   }
 
+  function requiresConfirmation(modelTitle: string) {
+    const name = modelTitle.toLowerCase();
+    return name.includes("openai") || name.includes("gpt");
+  }
+
   return (
     <ListboxOption
       key={idx}
@@ -99,6 +105,8 @@ function ModelSelect() {
   const [options, setOptions] = useState<Option[]>([]);
   const [sortedOptions, setSortedOptions] = useState<Option[]>([]);
   const { selectedProfile } = useAuth();
+  const [pendingModel, setPendingModel] = useState<Option | null>(null);
+  const [showPopup, setShowPopup] = useState(false);
 
   let selectedModel = null;
   let allModels = null;
@@ -112,6 +120,50 @@ function ModelSelect() {
   if (!allModels || allModels.length === 0) {
     allModels = config.modelsByRole.chat;
   }
+
+  function requiresConfirmation(modelTitle: string) {
+    const name = modelTitle.toLowerCase();
+    return name.includes("openai") || name.includes("gpt");
+  }
+
+  // CHANGED onChange handler
+  const handleModelChange = async (val: string) => {
+    if (val === selectedModel?.title) return;
+    const picked = options.find((opt) => opt.value === val);
+    if (picked && requiresConfirmation(picked.title)) {
+      setPendingModel(picked);
+      setShowPopup(true); // Show confirmation dialog
+      return;
+    }
+    // If no confirmation needed, just switch model
+    void dispatch(
+      updateSelectedModelByRole({
+        selectedProfile,
+        role: isInEdit ? "edit" : "chat",
+        modelTitle: val,
+      }),
+    );
+  };
+
+  // Confirmation popup handlers
+  const handleConfirm = () => {
+    if (pendingModel) {
+      void dispatch(
+        updateSelectedModelByRole({
+          selectedProfile,
+          role: isInEdit ? "edit" : "chat",
+          modelTitle: pendingModel.value,
+        }),
+      );
+      setPendingModel(null);
+    }
+    setShowPopup(false);
+  };
+
+  const handleCancel = () => {
+    setPendingModel(null);
+    setShowPopup(false);
+  };
 
   // Sort so that options without an API key are at the end
   useEffect(() => {
@@ -196,18 +248,7 @@ function ModelSelect() {
   const hasNoModels = allModels?.length === 0;
 
   return (
-    <Listbox
-      onChange={async (val: string) => {
-        if (val === selectedModel?.title) return;
-        void dispatch(
-          updateSelectedModelByRole({
-            selectedProfile,
-            role: isInEdit ? "edit" : "chat",
-            modelTitle: val,
-          }),
-        );
-      }}
-    >
+    <Listbox onChange={handleModelChange}>
       <div className="relative flex">
         <ListboxButton
           data-testid="model-select-button"
@@ -288,6 +329,64 @@ function ModelSelect() {
           )}
         </ListboxOptions>
       </div>
+      {/* Confirm dialog when user picks "openai" or "gpt" */}
+      {showPopup && (
+        <OcaRestrictivePopup
+          onAcknowledge={handleConfirm}
+          bannerText={`<div class="m-auto max-w-full w-[56rem] mx-2 shadow-3xl min-h-fit scrollbar-hidden bg-white dark:bg-gray-900 rounded-2xl svelte-fq1rhy"
+     style="">
+    <div class="px-5 pt-4 dark:text-gray-300 text-gray-700">
+        <div class="flex justify-between items-start">
+            <div class="text-xl font-semibold">Acknowledgement required to access Oracle Code Assist</div>
+        </div>
+    </div>
+    <div class="w-full p-4 px-5 text-gray-700 dark:text-gray-100">
+        <div class="overflow-y-scroll max-h-150 scrollbar-hidden">
+            <div class="mb-3 pr-2 my-2.5 px-1.5">
+                <div class="text-sm mb-2">
+                    <div class="mb-2 mt-1 text-sm/6 leading-6"><h3 class="text-lg/6 font-semibold text-gray-900">
+                        Disclaimer: Prohibited Data Submission</h3>
+                        <p class="mt-4 text-base/6 leading-6 text-gray-900 font-semibold">Attention Employees:</p>
+                        <p>By using this system, you acknowledge and agree that:</p>
+                        <p class="mt-2">You are not located in or accessing this system from China, Guam, Hong Kong,
+                            Macao, Puerto Rico or Ukraine; and</p>
+                        <p class="mt-2">You are strictly <strong>prohibited</strong> from uploading, submitting, or
+                            sharing the following types of data or submitting prompts requesting information about the
+                            following types of data through this platform, tool, or service:</p>
+                        <ul class="list-disc list-outside my-4 ml-8">
+                            <li>Non-public Oracle or line of business quarterly or annual financial results</li>
+                            <li>Any non-public information regarding vulnerabilities in any Oracle software or service
+                            </li>
+                            <li>Oracle Database source code</li>
+                            <li>Oracle policies</li>
+                            <li>Oracle employee PII or other HR data of any kind</li>
+                            <li>Health data of any kind, including but not limited to Protected Health Information
+                                (PHI)
+                            </li>
+                            <li>Any customer credit card or bank account details, or Payment Card Industry (PCI) data
+                            </li>
+                            <li>Data related to any Oracle M&amp;A activity</li>
+                            <li>Data pertaining to any pending, active or potential litigation or dispute</li>
+                            <li>Data with special handling restrictions imposed by law or contract, including data
+                                residency and nonstandard disclosure constraints
+                            </li>
+                            <li>Any usernames, passwords, authentication tokens or other access credentials for any
+                                Oracle or third-party system
+                            </li>
+                        </ul>
+                        <p class="text-base/6 leading-6 text-gray-900 font-semibold">Violation of this policy may result
+                            in disciplinary action, up to and including termination of employment, and/or legal
+                            consequences.
+                            This policy does not supersede any other relevant Oracle policy.</p>
+                        <p class="mt-2">If you are unsure whether your data falls under these categories, please consult
+                            your manager or the Information Security team <strong>before</strong> submission.</p></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>`}
+        />
+      )}
     </Listbox>
   );
 }

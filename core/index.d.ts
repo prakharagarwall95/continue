@@ -94,6 +94,7 @@ type RequiredLLMOptions =
 export interface ILLM
   extends Omit<LLMOptions, RequiredLLMOptions>,
     Required<Pick<LLMOptions, RequiredLLMOptions>> {
+  getModelInfo(model: string): ModelInfo | undefined;
   get providerName(): string;
   get underlyingProviderName(): string;
 
@@ -1131,6 +1132,26 @@ export interface ModelCapability {
   tools?: boolean;
 }
 
+export interface ModelInfo {
+  maxTokens?: number | undefined;
+  contextWindow?: number | undefined;
+  supportsImages?: boolean | undefined;
+  supportsPromptCache: boolean;
+  inputPrice?: number | undefined;
+  outputPrice?: number | undefined;
+  cacheWritesPrice?: number | undefined;
+  cacheReadsPrice?: number | undefined;
+  description?: string | undefined;
+  temperature?: number | undefined;
+  surveyContent?: string | undefined;
+  surveyId?: string | undefined;
+  bannerContent?: string | undefined;
+  modelName: string;
+}
+
+export interface ModelInfoMap {
+  models: { [key: string]: ModelInfo };
+}
 export interface ModelDescription {
   title: string;
   provider: string;
@@ -1156,6 +1177,7 @@ export interface ModelDescription {
   promptTemplates?: { [key: string]: string };
   cacheBehavior?: CacheBehavior;
   capabilities?: ModelCapability;
+  modelInfo?: ModelInfo
   roles?: ModelRole[];
   configurationStatus?: LLMConfigurationStatuses;
 

@@ -14,6 +14,7 @@ import {
 } from "../pages/AddNewModel/configs/providers";
 import { useAppDispatch } from "../redux/hooks";
 import { updateSelectedModelByRole } from "../redux/thunks/updateSelectedModelByRole";
+import { OcaRestrictivePopup } from "./ocaRestrictive";
 
 interface AddModelFormProps {
   onDone: () => void;
@@ -47,6 +48,7 @@ export function AddModelForm({
     providers["gemini"]?.title || "",
     providers["azure"]?.title || "",
     providers["ollama"]?.title || "",
+    providers["oca"]?.title || "",
   ];
 
   const allProviders = Object.entries(providers)

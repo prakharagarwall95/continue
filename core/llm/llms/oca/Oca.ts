@@ -1,6 +1,4 @@
-import {
-  ChatCompletionCreateParams,
-} from "openai/resources/index";
+import { ChatCompletionCreateParams } from "openai/resources/index";
 
 import { streamSse } from "@continuedev/fetch";
 import {
@@ -8,6 +6,7 @@ import {
   CompletionOptions,
   LLMOptions,
   Tool,
+  type ModelInfo,
 } from "../../../index.js";
 import { renderChatMessage } from "../../../util/messageContent.js";
 import { BaseLLM } from "../../index.js";
@@ -20,17 +19,30 @@ import { OcaTokenManager } from "./util/ocaTokenManager.js";
 import { createOcaHeaders, generateOpcRequestId } from "./util/utils.js";
 import { DEFAULT_OCA_BASE_URL, DEFAULT_OCA_VERSION } from "./util/constants.js";
 
+interface ModelInfoMap {
+  models: { [key: string]: ModelInfo };
+}
+
+const parsePrice = (price: any) => {
+  if (price) {
+    return parseFloat(price) * 1_000_000;
+  }
+  return undefined;
+};
 class Oca extends BaseLLM {
+  private modelMap: ModelInfoMap;
+
   constructor(options: LLMOptions) {
     super({
       ...options,
       capabilities: {
         uploadImage: false,
-        tools: true
-      }
+        tools: true,
+      },
     });
     this.uniqueId = options.uniqueId || "no-unique-id";
     this.apiVersion = options.apiVersion ?? DEFAULT_OCA_VERSION;
+    this.modelMap = { models: {} };
   }
 
   static providerName = "oca";
@@ -105,9 +117,7 @@ class Oca extends BaseLLM {
     return completion;
   }
 
-  protected _getEndpoint(
-    endpoint: "chat/completions" | "models",
-  ) {
+  protected _getEndpoint(endpoint: "chat/completions" | "models" | "model/info") {
     if (!this.apiBase) {
       throw new Error(
         "No API base URL provided. Please set the 'apiBase' option in config.json",
@@ -153,9 +163,9 @@ class Oca extends BaseLLM {
     messages: ChatMessage[],
     signal: AbortSignal,
     options: CompletionOptions,
-  ): AsyncGenerator<ChatMessage> {    
+  ): AsyncGenerator<ChatMessage> {
     const body = this._convertArgs(options, messages);
-    const headers = await this._getHeaders()
+    const headers = await this._getHeaders();
 
     const response = await this.fetch(this._getEndpoint("chat/completions"), {
       method: "POST",
@@ -185,18 +195,52 @@ class Oca extends BaseLLM {
     }
   }
 
-
   async listModels(): Promise<string[]> {
-    const headers = await this._getHeaders()
-    const response = await this.fetch(this._getEndpoint("models"), {
+    const headers = await this._getHeaders();
+    const response = await this.fetch(this._getEndpoint("model/info"), {
       method: "GET",
       headers: headers,
     });
 
-    const data = await response.json();
-    return data.data.map((m: any) => m.id);
+    const data = (await response.json()).data;
+    // Initialize the map
+    for (const model of data) {
+      if (typeof model?.litellm_params?.model !== "string") {
+        continue;
+      }
+      const modelId: string = model.litellm_params.model;
+      const maxTokens = model.litellm_params?.max_tokens;
+      if (!modelId) {
+        continue;
+      }
+
+      const modelInfo = model.model_info;
+
+      const ocaModelInfo: ModelInfo = {
+        maxTokens: maxTokens || -1,
+        contextWindow: modelInfo.context_window,
+        supportsImages: modelInfo.supports_vision || false,
+        supportsPromptCache: modelInfo.supports_caching || false,
+        inputPrice: parsePrice(modelInfo.input_price) || 0,
+        outputPrice: parsePrice(modelInfo.output_price) || 0,
+        cacheWritesPrice: parsePrice(modelInfo.caching_price) || 0,
+        cacheReadsPrice: parsePrice(modelInfo.cached_price) || 0,
+        description: modelInfo.description,
+        surveyContent: modelInfo.survey_content,
+        surveyId: modelInfo.survey_id,
+        temperature: modelInfo.temperature || 0,
+        bannerContent: modelInfo.banner,
+        modelName: modelId,
+      };
+      this.modelMap.models[modelId] = ocaModelInfo;
+    }
+    console.log("Oca models fetched", this.modelMap);
+    return Object.keys(this.modelMap.models);
   }
 
+  getModelInfo(model: string): ModelInfo | undefined {
+    return this.modelMap.models[model]
+  }
 }
 
 export default Oca;

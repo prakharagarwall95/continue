@@ -29,6 +29,7 @@ import {
   TabAutocompleteOptions,
   TemplateType,
   Usage,
+  type ModelInfo,
 } from "../index.js";
 import mergeJson from "../util/merge.js";
 import { renderChatMessage } from "../util/messageContent.js";
@@ -295,6 +296,12 @@ export abstract class BaseLLM implements ILLM {
     this.autocompleteOptions = options.autocompleteOptions;
     this.sourceFile = options.sourceFile;
   }
+  getModelInfo(model: string): ModelInfo | undefined {
+    return undefined;
+  }
+  useLegacyCompletionsEndpoint?: boolean | undefined;
+  modelArn?: string | undefined;
+  env?: Record<string, string | number | boolean> | undefined;
 
   getConfigurationStatus() {
     return LLMConfigurationStatuses.VALID;
