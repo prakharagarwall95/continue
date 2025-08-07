@@ -17,7 +17,7 @@ import {
 } from "../../openaiTypeConverters.js";
 import { OcaTokenManager } from "./util/ocaTokenManager.js";
 import { createOcaHeaders, generateOpcRequestId } from "./util/utils.js";
-import { DEFAULT_OCA_BASE_URL, DEFAULT_OCA_VERSION } from "./util/constants.js";
+import { DEFAULT_OCA_BASE_URL } from "./util/constants.js";
 
 interface ModelInfoMap {
   models: { [key: string]: ModelInfo };
@@ -41,7 +41,8 @@ class Oca extends BaseLLM {
       },
     });
     this.uniqueId = options.uniqueId || "no-unique-id";
-    this.apiVersion = options.apiVersion ?? DEFAULT_OCA_VERSION;
+    this.apiVersion = options.apiVersion;
+    this.apiBase = options.apiBase;
     this.modelMap = { models: {} };
   }
 
@@ -97,6 +98,7 @@ class Oca extends BaseLLM {
       );
     }
     const ocaHeaders = await createOcaHeaders(token, this.uniqueId);
+    console.log(`Making request with customer opc-request-id: ${ocaHeaders["opc-request-id"]}`)
     return ocaHeaders;
   }
 
@@ -126,13 +128,9 @@ class Oca extends BaseLLM {
     // Remove trailing slashes from base and leading/trailing slashes from endpoint
     const base = this.apiBase.replace(/\/+$/, "");
     const ep = endpoint.replace(/^\/+|\/+$/g, "");
-    const version = this.apiVersion
-      ? this.apiVersion.replace(/^\/+|\/+$/g, "")
-      : "";
 
     // Build the path
     let urlStr = base;
-    if (version) urlStr += `/${version}`;
     if (ep) urlStr += `/${ep}`;
 
     return new URL(urlStr);

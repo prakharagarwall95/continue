@@ -11,8 +11,7 @@ export const OCA_CONFIG_PATH = path.join(os.homedir(), ".oca", "config.json")
 export const OCA_RENEW_TOKEN_BUFFER_SEC = 180 // 3 minutes
 
 // OCA LITELLM
-export const DEFAULT_OCA_BASE_URL = "https://code-internal.aiservice.us-chicago-1.oci.oraclecloud.com"
-export const DEFAULT_OCA_VERSION = "20250206/app/litellm"
+export const DEFAULT_OCA_BASE_URL = "https://code-internal.aiservice.us-chicago-1.oci.oraclecloud.com/20250206/app/litellm"
 
 // OCA SURVEY
 export const DEFAULT_SURVEY_PORT = 3000
