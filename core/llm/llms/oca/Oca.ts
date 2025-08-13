@@ -99,9 +99,7 @@ class Oca extends BaseLLM {
       );
     }
     const ocaHeaders = await createOcaHeaders(token, this.uniqueId);
-    console.log(
-      `Making request with customer opc-request-id: ${ocaHeaders["opc-request-id"]}`,
-    );
+    console.log(`Making request with customer opc-request-id: ${ocaHeaders["opc-request-id"]}`)
     return ocaHeaders;
   }
 
@@ -122,9 +120,7 @@ class Oca extends BaseLLM {
     return completion;
   }
 
-  protected _getEndpoint(
-    endpoint: "chat/completions" | "models" | "model/info",
-  ) {
+  protected _getEndpoint(endpoint: "chat/completions" | "models" | "model/info") {
     if (!this.apiBase) {
       throw new Error(
         "No API base URL provided. Please set the 'apiBase' option in config.json",
@@ -242,7 +238,7 @@ class Oca extends BaseLLM {
   }
 
   getModelInfo(model: string): ModelInfo | undefined {
-    return this.modelMap.models[model];
+    return this.modelMap.models[model]
   }
 }
 
