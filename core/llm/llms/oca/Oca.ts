@@ -34,6 +34,7 @@ class Oca extends BaseLLM {
   constructor(options: LLMOptions) {
     super({
       ...options,
+      template: "none", //AICODE-3372
       capabilities: {
         uploadImage: false,
         tools: true,
