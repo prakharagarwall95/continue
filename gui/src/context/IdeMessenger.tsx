@@ -196,6 +196,7 @@ export class IdeMessenger implements IIdeMessenger {
     }) => {
       if (event.data.messageId === messageId) {
         const responseData = event.data.data;
+        console.log("[Webview RAW CHUNK]", JSON.stringify(responseData, null, 2));
         if ("error" in responseData) {
           error = responseData.error;
           return;
@@ -206,6 +207,7 @@ export class IdeMessenger implements IIdeMessenger {
           done = true;
           returnVal = responseData.content;
         } else {
+          console.log("[IdeMessenger] buffer.push chunk", JSON.stringify(responseData.content, null, 2));
           buffer.push(responseData.content);
         }
       }

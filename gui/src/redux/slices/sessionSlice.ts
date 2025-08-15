@@ -591,12 +591,15 @@ export const sessionSlice = createSlice({
             lastMessage.role !== message.role ||
             message.role === "tool" // Tool messages should always create new messages
           ) {
-            // Create a new message
+            // Create a new message, ensuring opcRequestId is preserved for assistant messages
             const historyItem: ChatHistoryItemWithMessageId = {
               message: {
                 ...message,
                 content: "", // Start with empty content, let accumulation logic handle it
                 id: uuidv4(),
+                ...(message.role === "assistant" && (message as any).opcRequestId
+                  ? { opcRequestId: (message as any).opcRequestId }
+                  : {}),
               },
               contextItems: [],
             };
@@ -606,8 +609,11 @@ export const sessionSlice = createSlice({
             lastMessage = lastItem.message;
           }
 
-          // Add to the existing message
+          // Add to the existing message; also make sure opcRequestId always stays present on assistant messages
           if (messageContent) {
+            if (lastMessage.role === "assistant" && (message as any).opcRequestId) {
+              (lastMessage as any).opcRequestId = (message as any).opcRequestId;
+            }
             if (messageContent.includes("<think>")) {
               lastItem.reasoning = {
                 startAt: Date.now(),

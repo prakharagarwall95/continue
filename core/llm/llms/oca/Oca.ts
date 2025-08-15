@@ -16,7 +16,7 @@ import {
   toChatBody,
 } from "../../openaiTypeConverters.js";
 import { OcaTokenManager } from "./util/ocaTokenManager.js";
-import { createOcaHeaders, generateOpcRequestId } from "./util/utils.js";
+import { createOcaHeaders } from "./util/utils.js";
 
 interface ModelInfoMap {
   models: { [key: string]: ModelInfo };
@@ -30,7 +30,6 @@ const parsePrice = (price: any) => {
 };
 class Oca extends BaseLLM {
   private modelMap: ModelInfoMap;
-
   constructor(options: LLMOptions) {
     super({
       ...options,
@@ -49,8 +48,8 @@ class Oca extends BaseLLM {
   static providerName = "oca";
 
   protected useOpenAIAdapterFor: (LlmApiRequestType | "*")[] = [
-    "list",
-    "streamChat",
+    "list"
+    // "streamChat" removed so we use OCA's native streaming with custom fields
   ];
 
   protected _convertModelName(model: string): string {
@@ -176,19 +175,43 @@ class Oca extends BaseLLM {
       signal,
     });
 
+    let responseOpcRequestId: string | undefined = undefined;
+    if (typeof response.headers?.get === "function") {
+      const raw = response.headers.get("opc-request-id");
+      console.log(
+        "[OPC DEBUG] raw response header opc-request-id:",
+        raw
+      );
+      responseOpcRequestId = raw !== null ? raw : undefined;
+      console.log(
+        "[OPC DEBUG] RESPONSE HEADER: opc-request-id (final value):",
+        responseOpcRequestId
+      );
+    }
+
     // Handle non-streaming response
     if (body.stream === false) {
       if (response.status === 499) {
         return; // Aborted by user
       }
       const data = await response.json();
-      yield data.choices[0].message;
+      if (data.choices && data.choices[0] && data.choices[0].message) {
+        const msg = data.choices[0].message;
+        if (msg.role === "assistant") {
+          (msg as any).opcRequestId = responseOpcRequestId;
+          console.log("[OPC DEBUG] attached opcRequestId to yielded msg:", responseOpcRequestId);
+        }
+        console.log("[OPC DEBUG] yielding msg:", JSON.stringify(msg, null, 2));
+        yield msg;
+      }
       return;
     }
 
     for await (const value of streamSse(response)) {
-      const chunk = fromChatCompletionChunk(value);
+      const chunk = fromChatCompletionChunk(value, responseOpcRequestId);
       if (chunk) {
+        console.log("[OPC DEBUG] yielding streamed chunk:", JSON.stringify(chunk, null, 2));
+        console.log("[OCA _streamChat] yielding chunk", JSON.stringify(chunk, null, 2));
         yield chunk;
       }
     }

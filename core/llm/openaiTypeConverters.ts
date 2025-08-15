@@ -170,13 +170,15 @@ export function fromChatResponse(response: ChatCompletion): ChatMessage {
 
 export function fromChatCompletionChunk(
   chunk: ChatCompletionChunk,
+  opcRequestId?: string
 ): ChatMessage | undefined {
+  console.log("openaiTypeConverters : opcRequestId ", opcRequestId)
   const delta = chunk.choices?.[0]?.delta;
-
   if (delta?.content) {
     return {
       role: "assistant",
       content: delta.content,
+      opcRequestId: opcRequestId
     };
   } else if (delta?.tool_calls) {
     return {
@@ -190,6 +192,7 @@ export function fromChatCompletionChunk(
           arguments: tool_call.function?.arguments,
         },
       })),
+      opcRequestId: opcRequestId
     };
   }
 
