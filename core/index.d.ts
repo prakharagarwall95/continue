@@ -397,6 +397,8 @@ export interface AssistantChatMessage {
   content: MessageContent;
   toolCalls?: ToolCallDelta[];
   usage?: Usage;
+  opcRequestId?: string;
+  [key: string]: unknown;
 }
 
 export interface SystemChatMessage {

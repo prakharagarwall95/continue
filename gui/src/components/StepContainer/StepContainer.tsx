@@ -86,6 +86,18 @@ export default function StepContainer(props: StepContainerProps) {
       "*",
     );
   }
+  const message = props.item.message;
+  const opcRequestId =
+    message.role === "assistant"
+      ? (message as import("core").AssistantChatMessage).opcRequestId
+      : undefined;
+  // console.log(
+  //   "STEP Container: history item at index",
+  //   props.index,
+  //   props.item,
+  //   "assistant.opcRequestId:",
+  //   opcRequestId
+  // );
 
   return (
     <div>
@@ -105,6 +117,16 @@ export default function StepContainer(props: StepContainerProps) {
               source={stripImages(props.item.message.content)}
               itemIndex={props.index}
             />
+            {/* Show Oracle opcRequestId for OCA assistant messages */}
+            {message.role === "assistant" &&
+              !!opcRequestId && (
+                <div className="text-xs text-gray-400 mt-1">
+                  Oracle opcRequestId:{" "}
+                  <span style={{ wordBreak: "break-all" }}>
+                    {opcRequestId}
+                  </span>
+                </div>
+              )}
           </>
         )}
         {props.isLast && <ThinkingIndicator historyItem={props.item} />}

@@ -70,6 +70,8 @@ export class VsCodeWebviewProtocol
           ) {
             let next = await response.next();
             while (!next.done) {
+              console.log("webview_content", next)
+              console.log("[webviewProtocol] yielding chunk from extension", JSON.stringify(next.value, null, 2));
               respond({
                 done: false,
                 content: next.value,
@@ -77,6 +79,7 @@ export class VsCodeWebviewProtocol
               });
               next = await response.next();
             }
+            console.log("webview_content", next)
             respond({
               done: true,
               content: next.value,

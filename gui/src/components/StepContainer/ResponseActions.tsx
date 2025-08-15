@@ -121,6 +121,27 @@ export default function ResponseActions({
         checkIconClassName="h-3.5 w-3.5 text-success"
       />
 
+      {/* Show Copy button for Oracle opcRequestId if present */}
+      {item.message.role === "assistant" &&
+        !!(item.message as import("core").AssistantChatMessage).opcRequestId && (
+          <HeaderButtonWithToolTip
+            text="Copy Oracle opcRequestId"
+            tabIndex={-1}
+            onClick={() =>
+              navigator.clipboard.writeText(
+                (item.message as import("core").AssistantChatMessage).opcRequestId!
+              )
+            }
+          >
+            <CopyIconButton
+              tabIndex={-1}
+              text={(item.message as import("core").AssistantChatMessage).opcRequestId!}
+              clipboardIconClassName="h-3.5 w-3.5 text-blue-500"
+              checkIconClassName="h-3.5 w-3.5 text-success"
+            />
+          </HeaderButtonWithToolTip>
+        )}
+
       <FeedbackButtons item={item} />
     </div>
   );

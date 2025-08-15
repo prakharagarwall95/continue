@@ -105,10 +105,14 @@ export async function* llmStreamChat(
         break;
       }
       if (next.value) {
-        yield {
-          role: "assistant",
-          content: next.value,
-        };
+        if (typeof next.value === "object" && next.value !== null) {
+          yield next.value;
+        } else {
+          yield {
+            role: "assistant",
+            content: typeof next.value === "string" ? next.value : String(next.value),
+          };
+        }
       }
       next = await gen.next();
     }
@@ -137,7 +141,7 @@ export async function* llmStreamChat(
       next = await gen.next();
     }
     if (config.experimental?.readResponseTTS && "completion" in next.value) {
-      void TTS.read(next.value?.completion);
+      void TTS.read(typeof next.value?.completion === "string" ? next.value?.completion : String(next.value?.completion));
     }
 
     void Telemetry.capture(

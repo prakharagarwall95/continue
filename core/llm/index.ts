@@ -890,10 +890,18 @@ export abstract class BaseLLM implements ILLM {
     options: LLMFullCompletionOptions = {},
   ) {
     let completion = "";
+    let opcRequestId: string | undefined = undefined;
     for await (const message of this.streamChat(messages, signal, options)) {
       completion += renderChatMessage(message);
+      if (message.role === "assistant") {
+        opcRequestId = (message as import("../index").AssistantChatMessage).opcRequestId ?? opcRequestId;
+      }
     }
-    return { role: "assistant" as const, content: completion };
+    return {
+      role: "assistant" as const,
+      content: completion,
+      ...(opcRequestId ? { opcRequestId } : {}),
+    };
   }
 
   compileChatMessages(

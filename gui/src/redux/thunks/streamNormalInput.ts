@@ -229,6 +229,7 @@ export const streamNormalInput = createAsyncThunk<
         break;
       }
 
+      console.log("[streamNormalInput] dispatching chunk", JSON.stringify(next.value, null, 2));
       dispatch(streamUpdate(next.value));
       next = await gen.next();
     }
